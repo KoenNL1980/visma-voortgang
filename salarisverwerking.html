@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Salarisverwerking</title>
+  <style>
+    :root { --panel:rgba(10,16,31,.95); --panel2:rgba(14,22,40,.95); --border:#1d3563; --text:#d8e8ff; --muted:#8ca4cf; --cyan:#5dc8ff; --green:#58d37b; --yellow:#ffd166; }
+    * { box-sizing:border-box; } body { margin:0; font-family:Consolas,"Cascadia Code","Courier New",monospace; color:var(--text); background:radial-gradient(circle at 10% 10%, rgba(93,200,255,.10), transparent 18%), linear-gradient(180deg,#05070d 0%,#04070f 100%); } a { color:inherit; text-decoration:none; }
+    .page { padding:20px; } .top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:16px; } .back { padding:9px 12px; border:1px solid rgba(93,200,255,.18); border-radius:999px; background:rgba(255,255,255,.03); color:var(--cyan); font-size:12px; }
+    h1 { margin:0 0 10px; font-size:34px; color:var(--cyan); } p { margin:0; color:var(--muted); line-height:1.6; }
+    .stats, .grid { display:grid; gap:14px; margin-top:16px; } .stats { grid-template-columns:repeat(4,1fr); } .grid { grid-template-columns:1fr 1fr; }
+    .panel { border:1px solid var(--border); border-radius:16px; background:linear-gradient(180deg,var(--panel),var(--panel2)); overflow:hidden; } .title { padding:12px 14px; border-bottom:1px solid rgba(29,53,99,.85); font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--cyan); } .content { padding:14px; }
+    .card, .row { border:1px solid rgba(255,255,255,.08); border-radius:12px; background:rgba(255,255,255,.03); padding:12px; } .label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; } .value { font-size:24px; margin:8px 0 6px; font-weight:700; } .note, li { color:var(--muted); line-height:1.55; }
+    .row { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+    table { width:100%; border-collapse:collapse; font-size:12px; } th, td { text-align:left; padding:10px 8px; border-bottom:1px solid rgba(255,255,255,.08); } th { color:var(--muted); font-size:10px; text-transform:uppercase; } .ok { color:var(--green); } .warn { color:var(--yellow); }
+    @media (max-width:900px) { .stats, .grid { grid-template-columns:1fr; } .top { flex-direction:column; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top">
+      <div>
+        <h1>Salarisverwerking</h1>
+        <p>Overzicht van een fictieve payroll-run met controles op mutaties, vrijgavemomenten en uitzonderingen voorafgaand aan export en bankvalidatie.</p>
+      </div>
+      <a class="back" href="open dag 3.html">Terug naar hoofdscherm</a>
+    </div>
+    <div class="stats">
+      <div class="card"><div class="label">Runs gepland</div><div class="value">2</div><div class="note">Reguliere run en correctieronde.</div></div>
+      <div class="card"><div class="label">Medewerkers in run</div><div class="value">1.842</div><div class="note">Fictief totaal over 5 besturen.</div></div>
+      <div class="card"><div class="label">Geblokkeerd</div><div class="value">1</div><div class="note">Wacht op HR-akkoord.</div></div>
+      <div class="card"><div class="label">Voorcontrole OK</div><div class="value">97%</div><div class="note">Na mutatie- en stamgegevencontrole.</div></div>
+    </div>
+    <div class="grid">
+      <div class="panel">
+        <div class="title">Run-overzicht</div>
+        <div class="content">
+          <table>
+            <thead><tr><th>Run</th><th>Periode</th><th>Scope</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>PAY-2026-03-A</td><td>Maart 2026</td><td>Regulier</td><td class="ok">Klaar voor vrijgave</td></tr>
+              <tr><td>PAY-2026-03-B</td><td>Maart 2026</td><td>Correcties / nabetaling</td><td class="warn">Wacht op akkoord</td></tr>
+              <tr><td>PAY-2026-04-P</td><td>April 2026</td><td>Voorbereiding</td><td class="ok">Mutaties geladen</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="title">Controleketen</div>
+        <div class="content">
+          <div class="row"><div><strong>Mutaties afsluiten</strong><div class="note">Controle op open contractwijzigingen en verlofcorrecties.</div></div><span class="ok">OK</span></div>
+          <div class="row"><div><strong>Premie- en schaalcheck</strong><div class="note">Automatische vergelijking met stamgegevens.</div></div><span class="ok">OK</span></div>
+          <div class="row"><div><strong>Vrijgave bestuur 3</strong><div class="note">Een run wacht op definitief akkoord van HR.</div></div><span class="warn">WACHT</span></div>
+          <div class="row"><div><strong>Doorzetting naar bankvalidatie</strong><div class="note">Na akkoord wordt het betaalbestand doorgezet.</div></div><span class="ok">GEREED</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="title">Fictieve context</div>
+        <div class="content"><div class="note">Aantallen, runnummers en perioden zijn fictief en bedoeld om een realistische beheeromgeving na te bootsen.</div></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
