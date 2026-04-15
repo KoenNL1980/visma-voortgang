@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Antonia Run</title>
+  <style>
+    :root {
+      --bg1: #06101d;
+      --bg2: #0b1628;
+      --panel: rgba(11, 19, 35, 0.94);
+      --border: #21406f;
+      --cyan: #71d6ff;
+      --green: #69df8b;
+      --yellow: #ffd166;
+      --orange: #ff9f68;
+      --pink: #ff7eb6;
+      --text: #e2efff;
+      --muted: #97afcf;
+      --road: #26364e;
+      --lane: #324967;
+      --safe: #132033;
+      --danger: #541f1f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Consolas, "Cascadia Code", "Courier New", monospace;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(113,214,255,.12), transparent 20%),
+        radial-gradient(circle at 85% 15%, rgba(255,209,102,.08), transparent 18%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+    }
+    .page {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .back {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(113,214,255,.22);
+      color: var(--cyan);
+      text-decoration: none;
+      background: rgba(255,255,255,.03);
+      font-size: 12px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      color: var(--cyan);
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.05;
+    }
+    .intro {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 80ch;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(11,19,35,.96), rgba(15,25,45,.96));
+      overflow: hidden;
+      box-shadow: 0 10px 26px rgba(0,0,0,.25);
+    }
+    .panel-title {
+      padding: 12px 15px;
+      border-bottom: 1px solid rgba(33,64,111,.85);
+      color: var(--cyan);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .tag {
+      color: var(--muted);
+      font-size: 10px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 999px;
+      padding: 3px 7px;
+    }
+    .content {
+      padding: 14px;
+    }
+    .game-wrap {
+      display: grid;
+      gap: 12px;
+    }
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .hud-card {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+    }
+    .hud-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+    }
+    .hud-value {
+      margin-top: 8px;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    canvas {
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: #0e1a2c;
+      display: block;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .button {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(113,214,255,.22);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
+    }
+    .button:hover {
+      border-color: rgba(113,214,255,.4);
+    }
+    .small {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .list, .signal-list {
+      display: grid;
+      gap: 10px;
+    }
+    .item {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+    }
+    .item-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .state-ok { color: var(--green); }
+    .state-warn { color: var(--yellow); }
+    .state-high { color: var(--orange); }
+    .score-form {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .score-form input {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      font: inherit;
+    }
+    .hidden { display: none; }
+    ol {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--text);
+    }
+    li {
+      margin: 0 0 8px;
+      padding-left: 4px;
+    }
+    .legend {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .legend-chip {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 760px) {
+      .hud { grid-template-columns: 1fr 1fr; }
+      .header { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div>
+        <h1>Antonia Run</h1>
+        <p class="intro">Help robotje Antonia naar de overkant. Ontwijk accountants, dossiers, loonstroken en bankafschriften. Elke geslaagde oversteek maakt de baan sneller. Besturing gaat alleen met de pijltjestoetsen.</p>
+      </div>
+      <a class="back" href="open dag 3.html">Terug naar hoofdscherm</a>
+    </div>
+
+    <div class="layout">
+      <div class="panel">
+        <div class="panel-title">
+          <span>Spel</span>
+          <span class="tag">keyboard only</span>
+        </div>
+        <div class="content game-wrap">
+          <div class="hud">
+            <div class="hud-card"><div class="hud-label">Score</div><div class="hud-value" id="scoreValue">0</div></div>
+            <div class="hud-card"><div class="hud-label">Level</div><div class="hud-value" id="levelValue">1</div></div>
+            <div class="hud-card"><div class="hud-label">Oversteken</div><div class="hud-value" id="crossValue">0</div></div>
+            <div class="hud-card"><div class="hud-label">Status</div><div class="hud-value" id="statusValue">Ready</div></div>
+          </div>
+
+          <canvas id="gameCanvas" width="940" height="760" aria-label="Antonia Run spel"></canvas>
+
+          <div class="controls">
+            <button class="button" id="startBtn">Start / Herstart</button>
+            <div class="small">Gebruik `↑ ↓ ← →` om te bewegen. Na game over kun je je naam invullen voor de highscore.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">
+          <span>Highscores</span>
+          <span class="tag">middagwedstrijd</span>
+        </div>
+        <div class="content">
+          <div class="signal-list">
+            <div class="item">
+              <div class="item-head"><strong>Spelregels</strong><span class="state-ok">ACTIEF</span></div>
+              <div class="small">De openingsronde is bewust rustiger voor jonge spelers. Na elke geslaagde oversteek gaat de snelheid met 20% omhoog.</div>
+            </div>
+            <div class="item">
+              <div class="item-head"><strong>Thema-objecten</strong><span class="state-warn">LET OP</span></div>
+              <div class="small">Accountants, dossiers, loonstroken en bankafschriften bewegen als obstakels over de banen.</div>
+            </div>
+          </div>
+
+          <div class="legend">
+            <div class="legend-chip">`↑` of `↓` voor een rij omhoog of omlaag</div>
+            <div class="legend-chip">`←` of `→` voor een stap opzij</div>
+          </div>
+
+          <div class="score-form hidden" id="scoreFormWrap">
+            <label class="small" for="playerName">Nieuwe highscore? Vul hier je naam in.</label>
+            <input id="playerName" type="text" maxlength="20" placeholder="Naam" />
+            <button class="button" id="saveScoreBtn">Score opslaan</button>
+          </div>
+
+          <div class="item" style="margin-top:12px;">
+            <div class="item-head"><strong>Top 10</strong><span class="state-high">LIVE</span></div>
+            <ol id="highscoreList"></ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const startBtn = document.getElementById("startBtn");
+    const saveScoreBtn = document.getElementById("saveScoreBtn");
+    const scoreFormWrap = document.getElementById("scoreFormWrap");
+    const playerNameInput = document.getElementById("playerName");
+    const highscoreList = document.getElementById("highscoreList");
+    const scoreValue = document.getElementById("scoreValue");
+    const levelValue = document.getElementById("levelValue");
+    const crossValue = document.getElementById("crossValue");
+    const statusValue = document.getElementById("statusValue");
+
+    const STORAGE_KEY = "antonia-run-highscores";
+    const laneCount = 9;
+    const laneHeight = 64;
+    const topSafeHeight = 90;
+    const bottomSafeHeight = 90;
+    const playTop = topSafeHeight;
+    const playBottom = canvas.height - bottomSafeHeight;
+    const antonia = {
+      width: 42,
+      height: 42,
+      stepX: 48,
+      stepY: laneHeight
+    };
+
+    const laneTypes = [
+      { type: "accountant", color: "#f28482", speed: 0.95, size: 86, direction: 1 },
+      { type: "dossier", color: "#84a59d", speed: 0.8, size: 92, direction: -1 },
+      { type: "loonstrook", color: "#f6bd60", speed: 1.05, size: 100, direction: 1 },
+      { type: "bankafschrift", color: "#7bdff2", speed: 0.9, size: 110, direction: -1 },
+      { type: "accountant", color: "#f5a65b", speed: 1.15, size: 86, direction: 1 },
+      { type: "dossier", color: "#90be6d", speed: 0.98, size: 95, direction: -1 },
+      { type: "loonstrook", color: "#ffd166", speed: 1.22, size: 102, direction: 1 },
+      { type: "bankafschrift", color: "#70d6ff", speed: 1.05, size: 114, direction: -1 },
+      { type: "accountant", color: "#ef476f", speed: 1.3, size: 88, direction: 1 }
+    ];
+
+    let lanes = [];
+    let player;
+    let gameRunning = false;
+    let animationId = null;
+    let level = 1;
+    let score = 0;
+    let crosses = 0;
+    let canSaveScore = false;
+
+    function createPlayer() {
+      player = {
+        x: canvas.width / 2 - antonia.width / 2,
+        y: canvas.height - bottomSafeHeight + 18,
+        width: antonia.width,
+        height: antonia.height
+      };
+    }
+
+    function createLaneObjects(index) {
+      const lane = laneTypes[index];
+      const y = playBottom - ((index + 1) * laneHeight) + 8;
+      const count = 3 + (index % 2);
+      const spacing = canvas.width / count;
+      const objects = [];
+
+      for (let i = 0; i < count; i++) {
+        const startX = lane.direction === 1
+          ? (i * spacing) - lane.size
+          : canvas.width - (i * spacing);
+
+        objects.push({
+          x: startX,
+          y,
+          width: lane.size,
+          height: laneHeight - 16,
+          type: lane.type,
+          color: lane.color,
+          speed: lane.speed,
+          direction: lane.direction
+        });
+      }
+
+      return { ...lane, y, objects };
+    }
+
+    function resetLanes() {
+      lanes = Array.from({ length: laneCount }, (_, index) => createLaneObjects(index));
+    }
+
+    function resetGame() {
+      level = 1;
+      score = 0;
+      crosses = 0;
+      canSaveScore = false;
+      scoreFormWrap.classList.add("hidden");
+      playerNameInput.value = "";
+      createPlayer();
+      resetLanes();
+      updateHud("Ready");
+      draw();
+    }
+
+    function startGame() {
+      resetGame();
+      gameRunning = true;
+      updateHud("Running");
+      loop();
+    }
+
+    function updateHud(status) {
+      scoreValue.textContent = score;
+      levelValue.textContent = level;
+      crossValue.textContent = crosses;
+      statusValue.textContent = status;
+    }
+
+    function laneSpeedMultiplier() {
+      return Math.pow(1.2, Math.max(0, crosses));
+    }
+
+    function updateObjects() {
+      const speedFactor = laneSpeedMultiplier();
+      lanes.forEach((lane) => {
+        lane.objects.forEach((obj) => {
+          obj.x += obj.speed * obj.direction * speedFactor;
+          if (obj.direction === 1 && obj.x > canvas.width + 20) {
+            obj.x = -obj.width - Math.random() * 140;
+          }
+          if (obj.direction === -1 && obj.x + obj.width < -20) {
+            obj.x = canvas.width + Math.random() * 140;
+          }
+        });
+      });
+    }
+
+    function intersects(a, b) {
+      return a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y;
+    }
+
+    function checkCollisions() {
+      for (const lane of lanes) {
+        for (const obj of lane.objects) {
+          if (intersects(player, obj)) {
+            endGame();
+            return;
+          }
+        }
+      }
+    }
+
+    function handleCrossing() {
+      if (player.y <= 26) {
+        crosses += 1;
+        score += 100 + ((level - 1) * 35);
+        level += 1;
+        createPlayer();
+        updateHud("Level up");
+      }
+    }
+
+    function drawBackground() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#102138";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#17314f";
+      ctx.fillRect(0, 0, canvas.width, topSafeHeight);
+      ctx.fillRect(0, canvas.height - bottomSafeHeight, canvas.width, bottomSafeHeight);
+
+      for (let i = 0; i < laneCount; i++) {
+        const y = playBottom - ((i + 1) * laneHeight);
+        ctx.fillStyle = i % 2 === 0 ? "#26364e" : "#2d4060";
+        ctx.fillRect(0, y, canvas.width, laneHeight);
+
+        ctx.strokeStyle = "rgba(255,255,255,.14)";
+        ctx.setLineDash([20, 16]);
+        ctx.beginPath();
+        ctx.moveTo(0, y + laneHeight / 2);
+        ctx.lineTo(canvas.width, y + laneHeight / 2);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      gradient.addColorStop(0, "#13233b");
+      gradient.addColorStop(1, "#0d1727");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#71d6ff";
+      ctx.font = "bold 18px Consolas";
+      ctx.fillText("FINISH", 24, 36);
+      ctx.fillText("START", 24, canvas.height - 28);
+    }
+
+    function drawObject(obj) {
+      ctx.save();
+      ctx.translate(obj.x, obj.y);
+      ctx.fillStyle = obj.color;
+      ctx.strokeStyle = "rgba(0,0,0,.28)";
+      ctx.lineWidth = 2;
+
+      if (obj.type === "accountant") {
+        ctx.fillRect(6, 14, obj.width - 12, obj.height - 18);
+        ctx.beginPath();
+        ctx.arc(obj.width / 2, 14, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeRect(12, 28, obj.width - 24, obj.height - 32);
+        ctx.fillStyle = "#0f1828";
+        ctx.fillRect(20, 38, obj.width - 40, 4);
+        ctx.fillRect(20, 48, obj.width - 48, 4);
+        ctx.fillStyle = "#1c2433";
+        ctx.fillRect(28, obj.height - 6, 8, 6);
+        ctx.fillRect(obj.width - 36, obj.height - 6, 8, 6);
+      } else if (obj.type === "dossier") {
+        ctx.fillRect(8, 14, obj.width - 16, obj.height - 18);
+        ctx.fillStyle = "rgba(255,255,255,.18)";
+        ctx.fillRect(18, 24, obj.width - 36, 10);
+        ctx.fillStyle = "#0f1828";
+        ctx.fillRect(18, 42, obj.width - 30, 4);
+        ctx.fillRect(18, 52, obj.width - 38, 4);
+        ctx.fillStyle = "rgba(255,255,255,.12)";
+        ctx.fillRect(18, 16, 26, 8);
+      } else if (obj.type === "loonstrook") {
+        ctx.fillStyle = "#fff4d6";
+        ctx.fillRect(10, 8, obj.width - 20, obj.height - 12);
+        ctx.strokeRect(10, 8, obj.width - 20, obj.height - 12);
+        ctx.fillStyle = "#f6bd60";
+        ctx.fillRect(16, 16, obj.width - 32, 10);
+        ctx.fillStyle = "#4d5c73";
+        ctx.fillRect(18, 36, obj.width - 36, 4);
+        ctx.fillRect(18, 46, obj.width - 28, 4);
+        ctx.fillRect(18, 56, obj.width - 44, 4);
+      } else {
+        ctx.fillStyle = "#ddfff7";
+        ctx.fillRect(8, 10, obj.width - 16, obj.height - 14);
+        ctx.strokeRect(8, 10, obj.width - 16, obj.height - 14);
+        ctx.fillStyle = "#70d6ff";
+        ctx.fillRect(14, 18, obj.width - 28, 10);
+        ctx.fillStyle = "#4d5c73";
+        ctx.fillRect(16, 38, obj.width - 30, 4);
+        ctx.fillRect(16, 50, obj.width - 26, 4);
+      }
+      ctx.restore();
+    }
+
+    function drawPlayer() {
+      ctx.save();
+      ctx.translate(player.x, player.y);
+      ctx.fillStyle = "#9ef0ff";
+      ctx.strokeStyle = "#0e1623";
+      ctx.lineWidth = 2;
+
+      ctx.fillRoundRect?.(0, 8, player.width, player.height - 8, 10);
+      if (!ctx.fillRoundRect) {
+        ctx.fillRect(0, 8, player.width, player.height - 8);
+      }
+      ctx.strokeRect(4, 12, player.width - 8, player.height - 14);
+      ctx.beginPath();
+      ctx.arc(player.width / 2, 10, 12, Math.PI, 0);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#ff7eb6";
+      ctx.beginPath();
+      ctx.arc(10, 6, 4, 0, Math.PI * 2);
+      ctx.arc(player.width - 10, 6, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#0c1a2a";
+      ctx.beginPath();
+      ctx.arc(14, 16, 3, 0, Math.PI * 2);
+      ctx.arc(player.width - 14, 16, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#69df8b";
+      ctx.fillRect(10, 26, player.width - 20, 6);
+      ctx.fillStyle = "#ff7eb6";
+      ctx.fillRect(15, 24, 4, 10);
+      ctx.fillRect(player.width - 19, 24, 4, 10);
+      ctx.fillRect(8, player.height - 6, 8, 6);
+      ctx.fillRect(player.width - 16, player.height - 6, 8, 6);
+      ctx.restore();
+    }
+
+    function drawOverlay(text) {
+      ctx.fillStyle = "rgba(3,8,14,.66)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#e2efff";
+      ctx.font = "bold 40px Consolas";
+      ctx.textAlign = "center";
+      ctx.fillText(text, canvas.width / 2, canvas.height / 2 - 12);
+      ctx.font = "18px Consolas";
+      ctx.fillStyle = "#97afcf";
+      ctx.fillText("Druk op Start / Herstart om opnieuw te spelen", canvas.width / 2, canvas.height / 2 + 28);
+      ctx.textAlign = "left";
+    }
+
+    function draw() {
+      drawBackground();
+      lanes.forEach((lane) => lane.objects.forEach(drawObject));
+      drawPlayer();
+      if (!gameRunning && score === 0 && crosses === 0) {
+        drawOverlay("Antonia klaar voor vertrek");
+      }
+    }
+
+    function loop() {
+      if (!gameRunning) return;
+      updateObjects();
+      checkCollisions();
+      handleCrossing();
+      draw();
+      animationId = requestAnimationFrame(loop);
+    }
+
+    function endGame() {
+      gameRunning = false;
+      cancelAnimationFrame(animationId);
+      updateHud("Game over");
+      draw();
+      drawOverlay("Game over");
+      canSaveScore = score > 0;
+      if (canSaveScore) {
+        scoreFormWrap.classList.remove("hidden");
+      }
+    }
+
+    function clampPlayer() {
+      player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+      player.y = Math.max(0, Math.min(canvas.height - player.height, player.y));
+    }
+
+    function movePlayer(key) {
+      if (!gameRunning) return;
+      if (key === "ArrowUp") player.y -= antonia.stepY;
+      if (key === "ArrowDown") player.y += antonia.stepY;
+      if (key === "ArrowLeft") player.x -= antonia.stepX;
+      if (key === "ArrowRight") player.x += antonia.stepX;
+      clampPlayer();
+      score += 2;
+      updateHud("Running");
+      draw();
+    }
+
+    function loadScores() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function saveScores(scores) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
+    }
+
+    function renderScores() {
+      const scores = loadScores();
+      highscoreList.innerHTML = "";
+      if (!scores.length) {
+        const li = document.createElement("li");
+        li.textContent = "Nog geen scores opgeslagen";
+        highscoreList.appendChild(li);
+        return;
+      }
+      scores.forEach((entry) => {
+        const li = document.createElement("li");
+        li.textContent = `${entry.name} - ${entry.score} punten (level ${entry.level})`;
+        highscoreList.appendChild(li);
+      });
+    }
+
+    function saveCurrentScore() {
+      if (!canSaveScore) return;
+      const name = playerNameInput.value.trim();
+      if (!name) {
+        playerNameInput.focus();
+        return;
+      }
+      const scores = loadScores();
+      scores.push({ name, score, level, crosses });
+      scores.sort((a, b) => b.score - a.score);
+      const topScores = scores.slice(0, 10);
+      saveScores(topScores);
+      renderScores();
+      canSaveScore = false;
+      scoreFormWrap.classList.add("hidden");
+      playerNameInput.value = "";
+    }
+
+    document.addEventListener("keydown", (event) => {
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
+        event.preventDefault();
+        movePlayer(event.key);
+      }
+    });
+
+    startBtn.addEventListener("click", startGame);
+    saveScoreBtn.addEventListener("click", saveCurrentScore);
+    playerNameInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") saveCurrentScore();
+    });
+
+    resetGame();
+    renderScores();
+  </script>
+</body>
+</html>
