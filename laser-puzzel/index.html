@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laser Puzzel</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Open Dag Minigame</p>
+        <h1>Laser Puzzel</h1>
+        <p class="subtitle">Gebruik spiegels, splitters, portals en schakelaars om alle ballonnen te laten knappen.</p>
+      </div>
+      <a class="back-link" href="../open dag 3.html">Terug naar hoofdpagina</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel panel-main">
+        <div class="panel-header">
+          <div>
+            <p class="panel-label">Raster</p>
+            <h2 id="levelTitle">Level 1</h2>
+          </div>
+          <div class="level-meta">
+            <span class="meta-pill" id="levelCounter">1 / 10</span>
+            <span class="meta-pill" id="winState">Nog niet opgelost</span>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="instructions" id="levelInstructions"></div>
+
+          <div class="grid-wrap">
+            <div class="grid" id="gameGrid" aria-label="Laser puzzel grid"></div>
+          </div>
+
+          <div class="controls-row">
+            <button id="resetBtn" type="button" class="action-btn">Reset level</button>
+            <button id="nextBtn" type="button" class="action-btn" disabled>Volgend level</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="panel">
+          <div class="panel-header compact">
+            <div>
+              <p class="panel-label">Toolbar</p>
+              <h2>Objecten</h2>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="toolbar" id="toolbar"></div>
+            <p class="help-text">Linksklik om te plaatsen of een geplaatst object te draaien. Rechtsklik op een geplaatst object om het te verwijderen.</p>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header compact">
+            <div>
+              <p class="panel-label">Status</p>
+              <h2>Doelen</h2>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="status-list" id="statusList"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header compact">
+            <div>
+              <p class="panel-label">Legenda</p>
+              <h2>Symbolen</h2>
+            </div>
+          </div>
+          <div class="panel-body">
+            <ul class="legend-list">
+              <li><span>▶</span> Laserbron</li>
+              <li><span>○</span> Ballon</li>
+              <li><span>/ \</span> Spiegels</li>
+              <li><span>✣</span> Splitter</li>
+              <li><span>A B</span> Portalparen</li>
+              <li><span>⌘</span> Schakelaar</li>
+              <li><span>■</span> Muur of deur</li>
+            </ul>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <script src="levels.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
