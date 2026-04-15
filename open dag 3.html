@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VGS - Antonia Automation Center</title>
+  <style>
+    :root {
+      --panel: rgba(10,16,31,.95);
+      --panel2: rgba(14,22,40,.95);
+      --border: #1d3563;
+      --border-soft: rgba(88,180,255,.16);
+      --text: #d8e8ff;
+      --muted: #8ca4cf;
+      --cyan: #5dc8ff;
+      --green: #58d37b;
+      --yellow: #ffd166;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Consolas, "Cascadia Code", "Courier New", monospace;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 12%, rgba(93,200,255,.10), transparent 18%),
+        linear-gradient(180deg, #05070d 0%, #04070f 100%);
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(rgba(255,255,255,.016) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.016) 1px, transparent 1px);
+      background-size: 42px 42px;
+      opacity: .14;
+    }
+    a { color: inherit; text-decoration: none; }
+    .app { min-height: 100vh; position: relative; z-index: 1; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(9,13,22,.96), rgba(7,11,18,.92));
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border-soft);
+      color: var(--cyan);
+      font-weight: 700;
+      font-size: 22px;
+      background: radial-gradient(circle at 35% 30%, rgba(93,200,255,.24), transparent 45%);
+    }
+    .title-link { text-decoration: none; color: inherit; }
+    .title { font-size: clamp(18px, 2vw, 26px); color: var(--cyan); font-weight: 700; }
+    .title-link:hover .title { text-shadow: 0 0 12px rgba(93,200,255,.28); }
+    .subtitle { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; line-height: 1.4; }
+    .header-right { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+    .pill {
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid var(--border-soft);
+      background: rgba(255,255,255,.03);
+    }
+    .ok { color: var(--green); }
+    .warn { color: var(--yellow); }
+    .clock { color: var(--muted); font-size: 11px; min-width: 172px; text-align: right; }
+    .dashboard {
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1.18fr 1fr .95fr;
+      gap: 12px;
+    }
+    .panel {
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      box-shadow: 0 8px 22px rgba(0,0,0,.30);
+      overflow: hidden;
+      position: relative;
+    }
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(93,200,255,.035), transparent 22%);
+    }
+    .panel-title {
+      padding: 11px 15px;
+      border-bottom: 1px solid rgba(29,53,99,.85);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--cyan);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: rgba(255,255,255,.02);
+      position: relative;
+      z-index: 1;
+    }
+    .tag { color: var(--muted); font-size: 10px; border: 1px solid rgba(255,255,255,.08); border-radius: 999px; padding: 3px 7px; }
+    .content { padding: 12px 15px 14px; position: relative; z-index: 1; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .card, .node, .progress-link {
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      border-radius: 12px;
+    }
+    .card { padding: 12px; }
+    .stat-label, .small, .status, .ai-state {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+    }
+    .stat-value { font-size: 22px; font-weight: 700; margin: 6px 0; }
+    .small { line-height: 1.4; text-transform: none; letter-spacing: 0; }
+    .stat-small { margin-top: 8px; font-size: 10px; color: var(--green); line-height: 1.35; }
+    #logs, #code { white-space: pre-wrap; font-size: 11px; line-height: 1.4; }
+    .node-list, .ai-list { display: flex; flex-direction: column; gap: 8px; }
+    .node {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 11px;
+      transition: .2s ease;
+    }
+    .node:hover { border-color: rgba(93,200,255,.25); transform: translateY(-1px); }
+    .node-left { display: flex; align-items: center; gap: 9px; min-width: 0; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px rgba(88,211,123,.35); }
+    .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+    .status { white-space: nowrap; }
+    .progress-link { display: block; padding: 8px 10px 10px; margin-bottom: 10px; }
+    .progress-label { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; margin-bottom: 6px; }
+    .progress-wrap { width: 100%; height: 14px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); }
+    .progress-bar { width: 0%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--cyan), var(--green)); transition: width .38s ease; }
+    .ai-item { display: flex; justify-content: space-between; gap: 10px; padding: 8px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,.06); background: rgba(255,255,255,.03); font-size: 11px; }
+    .ai-state { color: var(--green); }
+    .ai-panel-link { display: block; }
+    .ai-panel-link:hover .ai-item { border-color: rgba(93,200,255,.20); }
+    .ticker { grid-column: 1 / span 3; padding: 14px 16px; color: var(--yellow); font-size: 12px; }
+    .blink { animation: blink 1s steps(1) infinite; }
+    @keyframes blink { 50% { opacity: .25; } }
+    @media (max-width: 1200px) {
+      .dashboard { grid-template-columns: 1fr 1fr; }
+      .ticker { grid-column: 1 / span 2; }
+    }
+    @media (max-width: 820px) {
+      .dashboard, .stats-grid { grid-template-columns: 1fr; }
+      .ticker { grid-column: auto; }
+      .header { align-items: flex-start; }
+      .clock { text-align: left; min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="brand">
+        <div class="logo">A</div>
+        <a class="title-link" href="antonia-run.html">
+          <div class="title">VGS &middot; ANTONIA AUTOMATION CENTER</div>
+          <div class="subtitle">Open dag demonstratie &middot; workflowcontrole &middot; validatie &middot; koppelingen &middot; procesondersteuning</div>
+        </a>
+      </div>
+      <div class="header-right">
+        <div class="pill">Status: <span class="ok">RUNNING</span></div>
+        <div class="pill">Mode: <span class="warn">SAFE SIMULATION</span></div>
+        <div class="pill">Klik op een systeemnode voor details</div>
+        <a class="pill" href="laser-puzzel/index.html">Laser Puzzel</a>
+        <div class="clock" id="clock"></div>
+      </div>
+    </div>
+
+    <div class="dashboard">
+      <div class="panel">
+        <div class="panel-title"><span>Live Process Log</span><span class="tag">telemetry</span></div>
+        <div class="content" id="logs"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span>KPI / Telemetry</span><span class="tag">metrics</span></div>
+        <div class="content">
+          <div class="stats-grid">
+            <div class="card"><div class="stat-label">Records verwerkt</div><div class="stat-value" id="recordsProcessed">0</div><div class="stat-small">Doorlopende workflowactiviteit in de demo</div></div>
+            <div class="card"><div class="stat-label">Actieve jobs</div><div class="stat-value" id="activeJobs">0</div><div class="stat-small">Parallelle processen in de demo</div></div>
+            <div class="card"><div class="stat-label">Koppelingen online</div><div class="stat-value" id="integrations">0</div><div class="stat-small">Interne en externe routes</div></div>
+            <div class="card"><div class="stat-label">Tijd bespaard</div><div class="stat-value" id="timeSaved">0h</div><div class="stat-small">Geschatte tijdwinst vandaag</div></div>
+            <div class="card"><div class="stat-label">Validaties OK</div><div class="stat-value" id="validations">0</div><div class="stat-small">Documentcontrole en archiefchecks</div></div>
+            <div class="card"><div class="stat-label">Bankvalidaties</div><div class="stat-value" id="bankChecks">0</div><div class="stat-small">SEPA en betaalbatch-analyses</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span>System Nodes</span><span class="tag">endpoints</span></div>
+        <div class="content">
+          <div class="node-list" id="nodes"></div>
+          <div class="small" style="margin-top:10px;">Elke node opent precies een unieke subpagina. Zo blijft de navigatie helder tijdens de demo.</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span>Code / Workflow Fragments</span><span class="tag">snippets</span></div>
+        <div class="content" id="code"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span>Batch Progress</span><span class="tag">jobs</span></div>
+        <div class="content">
+          <div class="progress-link"><div class="progress-label"><span>AFAS mutatieverwerking</span><span id="p1Label">0%</span></div><div class="progress-wrap"><div class="progress-bar" id="p1"></div></div></div>
+          <div class="progress-link"><div class="progress-label"><span>SpendCloud documentvalidatie</span><span id="p2Label">0%</span></div><div class="progress-wrap"><div class="progress-bar" id="p2"></div></div></div>
+          <div class="progress-link"><div class="progress-label"><span>Salarisverwerking</span><span id="p3Label">0%</span></div><div class="progress-wrap"><div class="progress-bar" id="p3"></div></div></div>
+          <div class="progress-link"><div class="progress-label"><span>Bankvalidatie</span><span id="p4Label">0%</span></div><div class="progress-wrap"><div class="progress-bar" id="p4"></div></div></div>
+          <div class="progress-link"><div class="progress-label"><span>Rapportagebatch / jaarwerktool</span><span id="p5Label">0%</span></div><div class="progress-wrap"><div class="progress-bar" id="p5"></div></div></div>
+          <div class="progress-link"><div class="progress-label"><span>Begrotingstool workflowcontrole</span><span id="p6Label">0%</span></div><div class="progress-wrap"><div class="progress-bar" id="p6"></div></div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span>AI Assist</span><span class="tag">support</span></div>
+        <div class="content">
+          <a class="ai-panel-link" href="ai-signalen.html">
+            <div class="ai-list">
+              <div class="ai-item"><span>Patrooncontrole</span><span class="ai-state">ACTIEF</span></div>
+              <div class="ai-item"><span>Anomaliedetectie</span><span class="ai-state">ACTIEF</span></div>
+              <div class="ai-item"><span>Routeadvies workflow</span><span class="ai-state">GEREED</span></div>
+              <div class="ai-item"><span>Documentclassificatie</span><span class="ai-state">ACTIEF</span></div>
+              <div class="ai-item"><span>Betaalbatch controle</span><span class="ai-state">MONITORING</span></div>
+              <div class="ai-item"><span>Signaalinterpretatie</span><span class="ai-state">GEREED</span></div>
+            </div>
+            <div class="small" style="margin-top:10px;">Ondersteunende signalering en analyse op procesniveau. Klik voor een detailpagina met AI-signalen.</div>
+          </a>
+        </div>
+      </div>
+
+      <div class="panel ticker"><span class="blink">&#9679;</span>&nbsp;<span id="tickerText">Initialiseren van automatiseringssimulatie...</span></div>
+    </div>
+  </div>
+
+  <script>
+    const logs = document.getElementById("logs");
+    const code = document.getElementById("code");
+    const tickerText = document.getElementById("tickerText");
+    const nodes = document.getElementById("nodes");
+    const nodeData = [
+      ["AFAS Core", "afas-portaal.html"],
+      ["SpendCloud Connector", "spendcloud-validatie.html"],
+      ["Begrotingstool Engine", "begrotingstool.html"],
+      ["Jaarwerktool Batch Service", "jaarwerk-batch-service.html"],
+      ["Workflowcontrole Queue", "workflowcontrole.html"],
+      ["Documentvalidatie Service", "document-service.html"],
+      ["Mutatieverwerking Pipeline", "afas-mutaties.html"],
+      ["Rapportagebatch Scheduler", "rapportage-jaarwerk.html"],
+      ["Salarisverwerking Engine", "salarisverwerking.html"],
+      ["Bankvalidatie Module", "bankvalidatie.html"],
+      ["SEPA Controlelaag", "sepa-controlelaag.html"],
+      ["Koppelingen Hub", "koppelingen-hub.html"]
+    ];
+    const tickers = [
+      "Automatisering verwerkt repeterende taken, controles en signaalgestuurde workflowstappen.",
+      "Simulatie actief: geen live productiedata, wel een realistische weergave van processtromen.",
+      "AFAS, SpendCloud en maatwerktoepassingen worden hier visueel als keten getoond.",
+      "Workflowcontrole, mutatieverwerking en rapportagebatch draaien parallel in de demonstratie.",
+      "Salarisverwerking en bankvalidatie worden in deze omgeving veilig gesimuleerd.",
+      "Documentvalidatie en koppelingen tonen hoe meerdere onderdelen binnen een keten samenwerken."
+    ];
+    const codeSnippets = [
+`# AFAS mutatieverwerking
+def process_mutaties(batch):
+    validate(batch)
+    route_to_workflow(batch)`,
+`SELECT administratienummer, periode, status
+FROM rapportagebatch
+WHERE status IN ('READY','RUNNING');`,
+`for (const doc of documents) {
+  validateDocument(doc);
+  archiveResult(doc.id);
+}`,
+`{
+  "module": "bankvalidatie",
+  "result": "approved",
+  "checks": ["iban", "bic", "batchtotal"]
+}`,
+`if payroll_run.is_locked:
+    raise Exception("Payroll batch locked")`,
+`$items | ForEach-Object {
+  Invoke-WorkflowControle $_
+}`
+    ];
+    const logTemplates = [
+      ["INFO", "AFAS mutatieverwerking gestart voor batch {n}"],
+      ["OK", "SpendCloud documentvalidatie afgerond voor set {n}"],
+      ["INFO", "Begrotingstool workflowcontrole geladen: profiel {profile}"],
+      ["OK", "Jaarwerktool rapportagebatch succesvol afgewerkt"],
+      ["INFO", "Koppelingen Hub synchroniseert endpoint {connector}"],
+      ["WARN", "Bankvalidatie mismatch gedetecteerd, hercontrole ingepland"],
+      ["OK", "Salarisverwerking batch {n} gevalideerd"],
+      ["INFO", "SEPA controlelaag verwerkt betaalset {n}"]
+    ];
+    const connectors = ["AFAS API", "SpendCloud API", "SEPA Gateway", "Rapportage Engine", "Workflow Bus"];
+    const profiles = ["Payroll-Control", "Document-Chain", "Financial-Check", "Batch-Validation"];
+    let state = { recordsProcessed: 24840, activeJobs: 32, integrations: 12, timeSaved: 11.8, validations: 1821, bankChecks: 614, p1: 18, p2: 42, p3: 64, p4: 27, p5: 81, p6: 36 };
+    const progressProfiles = {
+      p1: { min: 3, max: 9, resetMin: 6, resetMax: 20 },
+      p2: { min: 1, max: 5, resetMin: 18, resetMax: 34 },
+      p3: { min: 2, max: 6, resetMin: 28, resetMax: 46 },
+      p4: { min: 4, max: 11, resetMin: 8, resetMax: 18 },
+      p5: { min: 1, max: 4, resetMin: 62, resetMax: 78 },
+      p6: { min: 2, max: 8, resetMin: 12, resetMax: 26 }
+    };
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const pick = (arr) => arr[rand(0, arr.length - 1)];
+    function renderClock() {
+      const now = new Date();
+      document.getElementById("clock").textContent = now.toLocaleDateString("nl-NL") + " " + now.toLocaleTimeString("nl-NL");
+    }
+    function initNodes() {
+      nodes.innerHTML = "";
+      nodeData.forEach(([name, href]) => {
+        const row = document.createElement("a");
+        row.className = "node";
+        row.href = href;
+        row.innerHTML = `<div class="node-left"><div class="dot"></div><div class="name">${name}</div></div><div class="status">ONLINE</div>`;
+        nodes.appendChild(row);
+      });
+    }
+    function pulseNodes() {
+      [...nodes.children].forEach((row) => {
+        const dot = row.querySelector(".dot");
+        const status = row.querySelector(".status");
+        const roll = Math.random();
+        if (roll < .78) {
+          dot.style.background = "#58d37b";
+          status.textContent = "ONLINE";
+          status.style.color = "#8ca4cf";
+        } else if (roll < .94) {
+          dot.style.background = "#ffd166";
+          status.textContent = "BUSY";
+          status.style.color = "#ffd166";
+        } else {
+          dot.style.background = "#5dc8ff";
+          status.textContent = "SYNC";
+          status.style.color = "#5dc8ff";
+        }
+      });
+    }
+    function updateStats() {
+      state.recordsProcessed += rand(18, 240);
+      state.activeJobs = Math.max(18, Math.min(72, state.activeJobs + rand(-3, 4)));
+      state.validations += rand(4, 18);
+      state.bankChecks += rand(1, 8);
+      if (Math.random() < .20 && state.timeSaved < 16.5) state.timeSaved += .1;
+      document.getElementById("recordsProcessed").textContent = state.recordsProcessed.toLocaleString("nl-NL");
+      document.getElementById("activeJobs").textContent = state.activeJobs;
+      document.getElementById("integrations").textContent = state.integrations;
+      document.getElementById("timeSaved").textContent = state.timeSaved.toFixed(1).replace(".", ",") + "h";
+      document.getElementById("validations").textContent = state.validations.toLocaleString("nl-NL");
+      document.getElementById("bankChecks").textContent = state.bankChecks.toLocaleString("nl-NL");
+    }
+    function progressStep(key, id) {
+      const profile = progressProfiles[key];
+      state[key] += rand(profile.min, profile.max);
+      if (state[key] > 100) state[key] = rand(profile.resetMin, profile.resetMax);
+      document.getElementById(id).style.width = state[key] + "%";
+      document.getElementById(id + "Label").textContent = state[key] + "%";
+    }
+    function addLogLine() {
+      const [type, template] = pick(logTemplates);
+      const text = template.replace("{n}", rand(1000, 9999)).replace("{connector}", pick(connectors)).replace("{profile}", pick(profiles));
+      const div = document.createElement("div");
+      div.style.marginBottom = "4px";
+      div.style.color = type === "OK" ? "#58d37b" : type === "WARN" ? "#ffd166" : "#5dc8ff";
+      div.textContent = `[${new Date().toLocaleTimeString("nl-NL")}] ${type.padEnd(4, " ")} ${text}`;
+      logs.prepend(div);
+      while (logs.children.length > 20) logs.removeChild(logs.lastChild);
+    }
+    function updateCode() {
+      code.textContent = Array.from({ length: 4 }, () => pick(codeSnippets)).join("\n\n");
+    }
+    function updateTicker() { tickerText.textContent = pick(tickers); }
+    function init() {
+      renderClock();
+      initNodes();
+      updateStats();
+      ["p1","p2","p3","p4","p5","p6"].forEach((id) => progressStep(id, id));
+      updateCode();
+      for (let i = 0; i < 12; i++) addLogLine();
+      updateTicker();
+      pulseNodes();
+    }
+    init();
+    setInterval(renderClock, 1000);
+    setInterval(updateStats, 1500);
+    setInterval(() => ["p1","p2","p3","p4","p5","p6"].forEach((id) => progressStep(id, id)), 900);
+    setInterval(addLogLine, 900);
+    setInterval(updateCode, 5200);
+    setInterval(updateTicker, 6000);
+    setInterval(pulseNodes, 1800);
+  </script>
+</body>
+</html>
