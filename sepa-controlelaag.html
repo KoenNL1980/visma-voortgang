@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SEPA Controlelaag</title>
+  <style>
+    :root { --panel:rgba(10,16,31,.95); --panel2:rgba(14,22,40,.95); --border:#1d3563; --text:#d8e8ff; --muted:#8ca4cf; --cyan:#5dc8ff; --green:#58d37b; --yellow:#ffd166; }
+    * { box-sizing:border-box; } body { margin:0; font-family:Consolas,"Cascadia Code","Courier New",monospace; color:var(--text); background:radial-gradient(circle at 10% 10%, rgba(93,200,255,.10), transparent 18%), linear-gradient(180deg,#05070d 0%,#04070f 100%); } a { color:inherit; text-decoration:none; }
+    .page { padding:20px; } .top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:16px; } .back { padding:9px 12px; border:1px solid rgba(93,200,255,.18); border-radius:999px; background:rgba(255,255,255,.03); color:var(--cyan); font-size:12px; } h1 { margin:0 0 10px; font-size:34px; color:var(--cyan); } p { margin:0; color:var(--muted); line-height:1.6; }
+    .stats,.grid { display:grid; gap:14px; margin-top:16px; } .stats { grid-template-columns:repeat(3,1fr); } .grid { grid-template-columns:1fr 1fr; } .panel { border:1px solid var(--border); border-radius:16px; background:linear-gradient(180deg,var(--panel),var(--panel2)); overflow:hidden; } .title { padding:12px 14px; border-bottom:1px solid rgba(29,53,99,.85); font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--cyan); } .content { padding:14px; } .card,.row { border:1px solid rgba(255,255,255,.08); border-radius:12px; background:rgba(255,255,255,.03); padding:12px; } .label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; } .value { font-size:24px; margin:8px 0 6px; font-weight:700; } .note { color:var(--muted); line-height:1.55; } .row { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; } .ok { color:var(--green); } .warn { color:var(--yellow); }
+    @media (max-width:900px) { .stats,.grid { grid-template-columns:1fr; } .top { flex-direction:column; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top">
+      <div>
+        <h1>SEPA Controlelaag</h1>
+        <p>Specifieke subpagina voor de bestands- en exportcontroles rond SEPA-betalingen, los van de bredere bankvalidatie.</p>
+      </div>
+      <a class="back" href="open dag 3.html">Terug naar hoofdscherm</a>
+    </div>
+    <div class="stats">
+      <div class="card"><div class="label">Exports vandaag</div><div class="value">18</div><div class="note">Fictieve betaalsets.</div></div>
+      <div class="card"><div class="label">XML-structuur OK</div><div class="value">17</div><div class="note">Een set in herstel.</div></div>
+      <div class="card"><div class="label">Mandaatchecks</div><div class="value">112</div><div class="note">Op referentie en herleidbaarheid.</div></div>
+    </div>
+    <div class="grid">
+      <div class="panel">
+        <div class="title">Controleblokken</div>
+        <div class="content">
+          <div class="row"><div><strong>Header en schema</strong><div class="note">Validatie op structuur en verplichte velden.</div></div><span class="ok">OK</span></div>
+          <div class="row"><div><strong>Batchreferentie</strong><div class="note">Vergelijking tussen bronrun en exportset.</div></div><span class="ok">OK</span></div>
+          <div class="row"><div><strong>Mandaat en kenmerk</strong><div class="note">Een export mist nog een compleet kenmerk.</div></div><span class="warn">CHECK</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="title">Context</div>
+        <div class="content">
+          <div class="note">Deze extra laag maakt de betaalstraat concreter en geeft een mooi technisch detail voor bezoekers die meer diepgang zoeken.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
